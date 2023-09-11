@@ -1,3 +1,4 @@
+package CP;
 import java.util.Scanner;
 
 public class cp5 {

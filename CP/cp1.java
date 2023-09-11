@@ -1,3 +1,4 @@
+package CP;
 import java.util.Random;
 public class cp1 {
     public static void main(String[] args) {

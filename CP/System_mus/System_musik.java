@@ -59,6 +59,7 @@ public class System_musik {
              FileOutputStream stream = new FileOutputStream(file)) {
             stream.getChannel().transferFrom(byteChannel, 0, Long.MAX_VALUE);
         }
+        System.out.println("Скачал, щас как заиграю");
     }
 
     private static void playMusic(String filePath) {

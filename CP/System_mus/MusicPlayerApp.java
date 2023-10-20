@@ -69,11 +69,6 @@ public class MusicPlayerApp {
             }
             playMusic(name);
         }
-            
-        
-        // Ваш код для скачивания и воспроизведения музыки здесь
-        // Пример: вызов функций downloadUsingNIO и playMusic с переданным URL
-        // Не забудьте обработать исключения
     }
 
     public static void main(String[] args) {

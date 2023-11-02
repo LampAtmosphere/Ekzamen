@@ -1,10 +1,4 @@
 import java.io.*;
-import java.net.URL;
-import java.nio.channels.Channels;
-import java.nio.channels.ReadableByteChannel;
-import java.nio.channels.FileChannel;
-import javazoom.jl.decoder.Bitstream;
-import javazoom.jl.player.advanced.AdvancedPlayer;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -15,7 +9,9 @@ public class System_musik {
     private static final String IN_FILE_TXT = "C:\\Users\\datch\\OneDrive\\Документы\\GitHub\\Ekzamen\\CP\\System_mus\\inFile.txt";
     private static final String OUT_FILE_TXT = "C:\\Users\\datch\\OneDrive\\Документы\\GitHub\\Ekzamen\\CP\\System_mus\\outFile.txt";
     private static final String PATH_TO_MUSIC = "C:\\Users\\datch\\OneDrive\\Документы\\GitHub\\Ekzamen\\CP\\System_mus\\music\\";
-
+    private static final String PATH_TO_IMG = "C:\\Users\\datch\\OneDrive\\Документы\\GitHub\\Ekzamen\\CP\\System_mus\\photos\\";
+    private static final String FOR_IMG_FILE = "C:\\Users\\datch\\OneDrive\\Документы\\GitHub\\Ekzamen\\CP\\System_mus\\ForImgFile.txt";
+    private static final String FOR_OUT_IMG = "C:\\Users\\datch\\OneDrive\\Документы\\GitHub\\Ekzamen\\CP\\System_mus\\ForOutImg.txt";
     public static void main(String[] args) {
         String Url;
         try (BufferedReader inFile = new BufferedReader(new FileReader(IN_FILE_TXT));
@@ -32,16 +28,28 @@ public class System_musik {
         } catch (IOException e) {
             e.printStackTrace();
         }
-
+        try (BufferedReader inFile = new BufferedReader(new FileReader(FOR_IMG_FILE));
+             BufferedWriter outFile = new BufferedWriter(new FileWriter(FOR_OUT_IMG))) {
+                while ((Url = inFile.readLine()) != null) {
+                Document doc = Jsoup.connect(Url).get();
+                Elements imgEl = doc.select("a[href$=.jpg]");
+                for (Element ImgElem : imgEl) {
+                    String imgUrl = ImgElem.attr("href");
+                    outFile.write(imgUrl + "\n");
+                }
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
         try (BufferedReader musicFile = new BufferedReader(new FileReader(OUT_FILE_TXT))) {
             String music;
             int count = 0;
             try {
                 while ((music = musicFile.readLine()) != null) {
                     String musicFilePath = PATH_TO_MUSIC + String.valueOf(count) + ".mp3";
-                    downloadUsingNIO(music, musicFilePath);
+                    MusicandImgDownloader.downloadMusic(music, musicFilePath);
                     count++;
-                    playMusic(musicFilePath); // Воспроизводим музыку
+                    MusicandImgDownloader.playMusic(musicFilePath); // Воспроизводим музыку
                 }
             } catch (IOException e) {
                 e.printStackTrace();
@@ -49,28 +57,22 @@ public class System_musik {
         } catch (IOException e) {
             e.printStackTrace();
         }
-    }
+    
 
-    private static void downloadUsingNIO(String strUrl, String file) throws IOException {
-        System.out.println("Скачиваю с сайта: " + strUrl);
-        URL url = new URL(strUrl);
-        try (InputStream in = url.openStream();
-             ReadableByteChannel byteChannel = Channels.newChannel(in);
-             FileOutputStream stream = new FileOutputStream(file)) {
-            stream.getChannel().transferFrom(byteChannel, 0, Long.MAX_VALUE);
-        }
-        System.out.println("Скачал, щас как заиграю");
-    }
-
-    private static void playMusic(String filePath) {
-        try {
-            FileInputStream fileInputStream = new FileInputStream(filePath);
-            Bitstream bitstream = new Bitstream(fileInputStream);
-            javazoom.jl.decoder.Header frame = bitstream.readFrame();
-            AdvancedPlayer player = new AdvancedPlayer(fileInputStream);
-            player.play();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        try (BufferedReader imgFile = new BufferedReader(new FileReader(FOR_OUT_IMG))) {
+                    String img;
+                    int count = 0;
+                    try {
+                        while ((img = imgFile.readLine()) != null) {
+                            String imgfilepath = PATH_TO_IMG + String.valueOf(count) + ".jpg";
+                            MusicandImgDownloader.downloadImage(img, imgfilepath);
+                            count++;
+                        }
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
     }
 }

@@ -1,0 +1,92 @@
+package obfuscator;
+import java.io.*;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.regex.*;
+public class File {
+public static void main(String[] args) {
+
+String filePath = "C:\\Users\\datch\\OneDrive\\Документы\\GitHub\\Ekzamen\\CP\\obfuscator\\textonjava.txt";
+
+try {
+
+BufferedReader reader = new BufferedReader(new FileReader(filePath));
+
+
+BufferedWriter writer = new BufferedWriter(new FileWriter("обработанный_файл.txt"));
+
+String line;
+while ((line = reader.readLine()) != null) {
+
+line = line.trim();
+
+
+line = line.replaceAll("
+
+
+
+File oldFile = new File(".*\\.txt");
+File newFile = new File("File.java");
+
+if (oldFile.renameTo(newFile)) {
+System.out.println("�?мя файла успешно изменено.");
+} else {
+System.out.println("Не удалось изменить имя файла.");
+}
+
+line = line.replaceAll("public\\s+class\\s+.*\\s*\\{", "public class File {");
+if (oldFile.renameTo(newFile)) {
+System.out.println("�?мя класса успешно изменено.");
+} else {
+System.out.println("Не удалось изменить имя файла.");
+}
+
+line = line.replaceAll("public\\s+.*\\s+{", "constructor");
+
+
+line = replaceIdentifiers(line);
+
+
+writer.write(line);
+writer.newLine();
+}
+
+
+reader.close();
+writer.close();
+
+System.out.println("Операции завершены успешно. Результат сохранен в 'File.java'.");
+} catch (IOException e) {
+e.printStackTrace();
+}
+}
+
+
+private static String replaceIdentifiers(String line) {
+
+Map<String, Character> identifierMap = new HashMap<>();
+char nextChar = 'a'; 
+
+
+Pattern pattern = Pattern.compile("[a-zA-Z_][a-zA-Z0-9_]*");
+Matcher matcher = pattern.matcher(line);
+
+while (matcher.find()) {
+String identifier = matcher.group();
+
+if (!identifierMap.containsKey(identifier)) {
+
+identifierMap.put(identifier, nextChar++);
+}
+}
+
+
+for (Map.Entry<String, Character> entry : identifierMap.entrySet()) {
+String oldIdentifier = entry.getKey();
+char newIdentifier = entry.getValue();
+line = line.replace(oldIdentifier, Character.toString(newIdentifier));
+}
+return line;
+}
+}
+C:\Users\datch\OneDrive\Документы\GitHub\Ekzamen\CP\obfuscator\Obfuscator.java

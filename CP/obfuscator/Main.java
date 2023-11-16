@@ -5,73 +5,70 @@ import java.util.regex.*;
 
 public class Main {
     public static void main(String[] args) {
-        // Путь к файлу, указанный пользователем
-        String filePath = "C:\\Users\\datch\\OneDrive\\Документы\\GitHub\\Ekzamen\\CP\\obfuscator\\textonjava.txt";
-
+        String result = "";
         try {
-            String line = "";
-            // Открываем входной файл
-            BufferedReader reader = new BufferedReader(new FileReader(filePath));
-
-            // Создаем выходной файл
-            BufferedWriter writer = new BufferedWriter(new FileWriter("обработанный_файл.txt"));
-
-            // 3. Замена имени файла класса и конструкторов
-           
-
+            String text = "";
+            File file = new File("C:\\Users\\datch\\OneDrive\\Документы\\GitHub\\Ekzamen\\CP\\obfuscator\\textonjava.txt");
+            FileReader fr = new FileReader(file);
+            BufferedReader reader = new BufferedReader(fr);
+            String line = null;
             while ((line = reader.readLine()) != null) {
-                // 1. Удаление лишних пробелов и символов перехода на новую строку
-                line = line.trim();
-
-                // 2. Удаление комментариев
-                line = line.replaceAll("//.*|/\\*(.|\\n)*?\\*/", "");
-
-                // 4. Замена идентификаторов на односимвольные или двухсимвольные имена
-                //line = replaceIdentifiers(line);
-                 line = line.replaceAll("public\\s+class\\s+.*\\s*\\{", "public class File {");
-                System.out.println("Имя класса успешно изменено.");
-                //line = line.replaceAll("public\\s+.*\\s+\\{", "constructor");
-
-                // Записываем обработанную строку в выходной файл
-                writer.write(line);
-                writer.newLine();
+                text += line + ("\n");
             }
+            System.out.println(text);  // Вывод с комментариями
+            result = text.replaceAll("//.*", "").replaceAll("/\\*(.|\\n)*?\\*/", "");
+            result = result.replaceAll("\\s*(?=[;{}()=,])|(?<=[;{}()=,])\\s*", "").replaceAll("/\\*(.|\\n)*?\\*/", "");
 
-            // Закрываем файлы
+            // Изменение имен переменных
+            result = obfuscateVariables(result);
+
             reader.close();
-            writer.close();
 
-            System.out.println("Операции завершены успешно. Результат сохранен в 'обработанный_файл.txt'.");
-        } catch (IOException e) {
-            e.printStackTrace();
+        } catch (IOException ex) {
+            System.out.println(ex.getMessage());
+        }
+        try {
+            FileWriter writer = new FileWriter("C:\\Users\\datch\\OneDrive\\Документы\\GitHub\\Ekzamen\\CP\\obfuscator\\textonjava.txt", false);
+            writer.write(result);
+            writer.close();
+        } catch (IOException ex) {
+            System.out.println(ex.getMessage());
         }
     }
 
-    // Функция для замены идентификаторов на односимвольные или двухсимвольные имена ПокаЧТо не работает!!!
-    private static String replaceIdentifiers(String line) {
-        // Создаём таблицу замены для односимвольных имен
-        Map<String, Character> identifierMap = new HashMap<>();
-        char nextChar = 'a'; // Начнем с буквы 'a'
-
-        // Найдем все идентификаторы в строке с помощью регулярных выражений
-        Pattern pattern = Pattern.compile("[a-zA-Z_][a-zA-Z0-9_]*");
-        Matcher matcher = pattern.matcher(line);
+    // Функция для изменения имен переменных
+    private static String obfuscateVariables(String input) {
+        Map<String, Integer> variableCountMap = new HashMap<>();
+        Matcher matcher = Pattern.compile("\\b(int|String|boolean|double|float)\\s+([a-zA-Z_][a-zA-Z0-9_]*)\\b").matcher(input);
 
         while (matcher.find()) {
-            String identifier = matcher.group();
-            // Проверим, существует ли уже замена для данного идентификатора
-            if (!identifierMap.containsKey(identifier)) {
-                // Если нет, добавим новую замену
-                identifierMap.put(identifier, nextChar++);
-            }
+            String type = matcher.group(1);
+            String originalName = matcher.group(2);
+            String obfuscatedName = generateUniqueName(originalName, variableCountMap);
+
+            // Заменяем оригинальное имя на обфусцированное
+            input = input.replace(originalName, obfuscatedName);
         }
 
-        // Выполним замену в строке
-        for (Map.Entry<String, Character> entry : identifierMap.entrySet()) {
-            String oldIdentifier = entry.getKey();
-            char newIdentifier = entry.getValue();
-            line = line.replaceAll("\\b" + oldIdentifier + "\\b", Character.toString(newIdentifier));
+        return input;
+    }
+
+    private static String generateUniqueName(String originalName, Map<String, Integer> variableCountMap) {
+        if (!variableCountMap.containsKey(originalName)) {
+            variableCountMap.put(originalName, 1);
+        } else {
+            int count = variableCountMap.get(originalName);
+            count++;
+            variableCountMap.put(originalName, count);
         }
-        return line;
+
+        char baseLetter = originalName.charAt(0);
+        String obfuscatedName = Character.toString(baseLetter);
+
+        if (variableCountMap.get(originalName) > 1) {
+            obfuscatedName += variableCountMap.get(originalName);
+        }
+
+        return obfuscatedName;
     }
 }
